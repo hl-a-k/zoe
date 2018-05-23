@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- logback 基础配置  -->
+<included>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <!-- 定义日志文件的存储地址 -->
+    <springProperty scope="context" name="FILE_NAME" source="spring.application.name" defaultValue="ZOE-CLOUD" />
+    <property name="LOG_HOME" value="${LOG_HOME:-${user.dir}\\logs}" />
+    <property name="FILE_NAME" value="${FILE_NAME:-zoe.cloud}" />
+    <property name="MAX_FILE_SIZE" value="${MAX_FILE_SIZE:-10MB}" />
+    <!-- 格式化输出。
+       %d/date{HH:mm:ss.SSS}：输出日志的打印日志，模式语法与java.text.SimpleDateFormat 兼容
+       %-5p/le/level：级别从左显示5个字符宽度
+       %t/thread    输出产生日志的线程名。
+       %logger{36} 表示logger名字最长36个字符 为0表示只输入logger最右边点符号之后的字符串
+       %F java源文件名 *.java
+       %L 行
+       %m/msg/message：日志内容
+       %n：换行符 -->
+    <property name="ENCODER_PATTERN" value="${ENCODER_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%-5level] [%logger{1}:%L] [%file : %line] - %msg%n}" />
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <Target>System.out</Target>
+        <encoder>
+            <!--<pattern>${ENCODER_PATTERN}</pattern>-->
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+    </appender>
+    <!-- 按照每天生成日志文件 -->
+    <appender name="DailyFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- Tests run on modern PCs show that buffering related property -->
+        <!-- "ImmediateFlush" has negligible impact and will be ignored.  -->
+        <!--See http://logback.qos.ch/manual/appenders.html#RollingFileAppender-->
+        <!--and http://logback.qos.ch/manual/appenders.html#TimeBasedRollingPolicy-->
+        <!--for further documentation-->
+        <append>true</append>
+        <file>${LOG_HOME}\${FILE_NAME}.log</file>
+        <encoder>
+            <!--<pattern>${ENCODER_PATTERN}</pattern>-->
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <!-- 临界值过滤器，过滤掉低于指定临界值的日志。当日志级别等于或高于临界值时，过滤器返回NEUTRAL；当日志级别低于临界值时，日志会被拒绝。-->
+        <!-- 过滤掉 TRACE 和 DEBUG 级别的日志-->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${LOG_HOME}\${FILE_NAME}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>20GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!--<appender name="MONGODB" class="com.zoe.framework.logback.mongodb.MongoDBAppender">
+        <uri>mongodb://localhost:27017</uri>
+        <db>dmp_logs</db>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+    </appender>-->
+
+    <!--日志异步到数据库 -->
+    <!--<appender name="DB" class="ch.qos.logback.classic.db.DBAppender">-->
+    <!--&lt;!&ndash;日志异步到数据库 &ndash;&gt;-->
+    <!--<connectionSource class="ch.qos.logback.core.db.DataSourceConnectionSource">-->
+    <!--&lt;!&ndash; druid 连接池 &ndash;&gt;-->
+    <!--<dataSource class="com.alibaba.druid.pool.DruidDataSource">-->
+    <!--<driverClassName>com.mysql.jdbc.Driver</driverClassName>-->
+    <!--<url>jdbc:mysql://192.168.2.166:3306/zoe_cloud_logs?characterEncoding=utf8&amp;useSSL=true</url>-->
+    <!--<username>root</username>-->
+    <!--<password>admin</password>-->
+    <!--</dataSource>-->
+    <!--</connectionSource>-->
+    <!--<filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
+    <!--&lt;!&ndash;数据库中只记录ERROR日志&ndash;&gt;-->
+    <!--<level>ERROR</level>-->
+    <!--</filter>-->
+    <!--</appender>-->
+
+    <!-- 邮件发送相关 -->
+    <!--<property name="smtpHost" value="smtp.qq.com"/>-->
+    <!--<property name="username" value="xx@xx.com"/>-->
+    <!--<property name="smtpPort" value="25"/>-->
+    <!--<property name="password" value="xx"/>-->
+    <!--<property name="SSL" value="false"/>-->
+    <!--<property name="email_to" value="136259212@qq.com"/>-->
+    <!--<property name="email_from" value="xx@xx.com"/>-->
+    <!--<property name="email_subject" value="【孕产妇错误日志】%logger{20}:%L"/>-->
+
+    <!--<appender name="EMAIL" class="ch.qos.logback.classic.net.SMTPAppender">-->
+    <!--<smtpHost>${smtpHost}</smtpHost>-->
+    <!--<smtpPort>${smtpPort}</smtpPort>-->
+    <!--<username>${username}</username>-->
+    <!--<password>${password}</password>-->
+    <!--<SSL>${SSL}</SSL>-->
+    <!--<asynchronousSending>false</asynchronousSending>-->
+    <!--<to>${email_to}</to>-->
+    <!--<from>${email_from}</from>-->
+    <!--<subject>${email_subject}</subject>-->
+    <!--<layout class="ch.qos.logback.classic.html.HTMLLayout">-->
+    <!--<pattern>%d{[yyyy-MM-dd HH:mm:ss]}[%level][%logger:%L] %msg</pattern>-->
+    <!--</layout>-->
+    <!--<filter class="ch.qos.logback.core.filter.EvaluatorFilter">-->
+    <!--<level>ERROR</level>-->
+    <!--<onMatch>ACCEPT</onMatch>-->
+    <!--<onMismatch>NEUTRAL</onMismatch>-->
+    <!--</filter>-->
+    <!--</appender>-->
+    <!-- 邮件发送相关 -->
+
+    <!--
+additivity的作用在于 children-logger是否使用 rootLogger配置的appender进行输出。
+false：表示只用当前logger的appender-ref。
+true：表示当前logger的appender-ref和rootLogger的appender-ref都有效。
+    -->
+    <!--<logger name="javax.activation" level="WARN"/>-->
+    <!--<logger name="javax.mail" level="WARN"/>-->
+    <!--<logger name="javax.xml.bind" level="WARN"/>-->
+    <!--<logger name="ch.qos.logback" level="DEBUG"/>-->
+    <!--<logger name="com.netflix" level="WARN"/>-->
+    <!--<logger name="com.netflix.discovery" level="INFO"/>-->
+    <!--<logger name="com.sun" level="WARN"/>-->
+    <!--<logger name="io.undertow" level="WARN"/>-->
+    <!--<logger name="io.undertow.websockets.jsr" level="ERROR"/>-->
+    <!--<logger name="org.apache" level="WARN"/>-->
+    <!--<logger name="org.xnio" level="WARN"/>-->
+    <!--<logger name="springfox" level="WARN"/>-->
+    <!--<logger name="sun.rmi" level="WARN"/>-->
+    <!--<logger name="sun.net.www" level="INFO"/>-->
+    <!--<logger name="sun.rmi.transport" level="WARN"/>-->
+    <!--<logger name="org.quartz" level="INFO"/>-->
+    <!--<logger name="org.apache.velocity" level="INFO"/>-->
+    <!-- velocity source use logger with name Velocity -->
+    <!--<logger name="Velocity" level="INFO"/>-->
+    <!--<logger name="net.sf.ehcache" level="INFO"/>-->
+    <!--<logger name="org.hibernate" level="WARN"/>-->
+    <!--<logger name="org.springframework.web" level="WARN"/>-->
+    <!--<logger name="org.springframework.security" level="WARN"/>-->
+    <!--<logger name="org.springframework.cache" level="WARN"/>-->
+    <!--<logger name="org.springframework" level="WARN"/>-->
+    <!--<logger name="org.apache.commons" level="INFO"/>-->
+    <!--<logger name="org.apache.shiro" level="INFO"/>-->
+    <!--<logger name="org.mongodb" level="INFO"/>-->
+    <logger name="druid.sql.Connection" level="INFO"/>
+    <logger name="druid.sql.ResultSet" level="INFO"/>
+    <logger name="druid.sql.Statement" level="DEBUG"/>
+    <logger name="com.zoe" additivity="false" level="DEBUG">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="DailyFILE"/>
+        <!--<appender-ref ref="DB"/>
+        <appender-ref ref="MONGODB"/>-->
+    </logger>
+    <logger name="com.zoe.framework.sql2o" level="DEBUG"/>
+    <logger name="com.lorne.tx" level="WARN"/>
+
+    <!--<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">-->
+    <!--<resetJUL>true</resetJUL>-->
+    <!--</contextListener>-->
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="DailyFILE"/>
+    </root>
+</included>

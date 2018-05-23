@@ -1,0 +1,117 @@
+﻿2016-10-03:
+1、同步官方最新版本：sql2o-sql2o-parent-1.6.0-RC3
+即：https://github.com/aaberg/sql2o/commit/ca302b0f6f69dc705f03518d82c4cb674a9738aa
+2、合并Getter、Setter
+3、增加单元测试
+
+2016-07-28:
+1、增加 IPagingHelper，OraclePagingHelper.
+2、oracle分页支持 其独有的nulls first跟nulls last支持
+
+2016-07-13:
+1、删除SqlBagTable、SqlBagTableMap
+如果有需要表名变更时，通过properties文件的键值对配置即可。
+
+2016-05-16:
+1、sql2o包单独出来，不再与velocity放在一起
+2、对spring-jdbc的依赖改为弱依赖，不再强制依赖：
+依赖spring-jdbc主要是为了实现通过注解：@Transaction 来进行sql2o的事务控制，而不需要手动编写事务开启代码
+主要是依赖 org.springframework.jdbc.datasource.DataSourceUtils 的获取连接对象跟关闭连接对象方法。
+
+2016-01-19:
+1、sqlbag新增熟悉configLocations,允许配置多个sqlbag集合
+2、增加shiro相关util
+
+2016-01-13:
+1.所有删除变更为逻辑删除
+2.DAO增加删除接口(允许传入参数标记是否为物理删除)：
+int delete(T o,boolean physicalDelete);
+int deleteById(Serializable id,boolean physicalDelete);
+<A> int deleteById(Class<A> c, Serializable id,boolean physicalDelete);
+3.增加全局异常处理
+
+2015-12-17:
+1、Connection 方法增加：
+updateByProperties(map, false)，根据属性列表更新数据库记录
+
+2015-12-16:
+1、升级sql2o到官方最新master（2015-11-26）。https://github.com/aaberg/sql2o/tree/0811e7d62d47e5c95a1c9de907e8b7f046e41648
+2、修正PojoIntrospector.java缓存pCache未使用到的bug
+
+2015-12-15:
+1、Connection 方法增加：
+update(final Object pojo,Set<String> properties) -- 更新实体记录，可以指定要更新的列
+updateByProperties -- 根据某些属性修改记录
+
+2015-05-21:
+1、Sql2o类中增加throwOnMappingFailure属性，设置在映射数据库字段到实体属性找不到对应属性时是否抛出错误
+
+2015-05-18:
+1、Connection 方法增加：
+deleteByProperty -- 根据某个属性删除记录
+deleteByProperties -- 根据某些属性删除记录
+
+2015-05-15：
+1、Connection中，添加 增删改查支持。
+findByProperties --根据某些字段（属性）查找列表
+findFirstByProperties --根据某些字段查（属性）找第一条记录
+
+2015-05-13：
+1、新增com.zoe.framework.sql2o.tools.CamelCaseUtils替换UnderscoreToCamelCase
+2、Query在执行executeAndFetchTableLazy时，将caseSensitive、autoDeriveColumnNames设置为true，
+以使得数据库中带下划线的字段在填充LazyTable时，字段名自动替换为小驼峰命名方式，
+以使得与实体类属性名称一致，如此在使用asList转换为List<Map>时，Map的key也是小驼峰。
+
+2015-05-12：
+1、Connection中，增加方法getPojoChangedPropertiesMap，在update实体时，自动查询数据库中的对应记录并对比差异。
+以使得update时只修改变更字段。
+
+2015-01-25:
+1、Connection中，添加 增删改查支持。
+getById()
+insert()
+insertList()
+update()
+delete()
+deleteById()
+findAll() --查询整个表
+findByProperty() --根据某个字段（属性）查找列表
+findFirstByProperty() --根据某个字段（属性）查找第一条记录
+
+2015-01-20:
+1、sql2o依赖javax.persistence,生成实体时使用注解标记主键以及属性与数据库字段的映射。
+以方便查询数据库时，不需要对字段取别名即可自动填充实体属性。
+例如,原先要对字段取别名或者使用addColumnMapping添加映射关系才能正确的填充到实体属性，现在不需要此操作即可自动填充。
+栗子1：取别名方式(as duedate)
+public List<Task> getTasksBetweenDates(Date fromDate, Date toDate){
+    String sql =
+        "SELECT id, description, due_date as duedate " +
+        "FROM tasks " +
+        "WHERE duedate > :fromDate AND duedate < :toDate";
+
+    try (Connection con = sql2o.open()) {
+        return con.createQuery(sql)
+            .addParameter("fromDate", fromDate)
+            .addParameter("toDate", toDate)
+            .executeAndFetch(Task.class);
+    }
+}
+栗子2：手动映射字段方式(addColumnMapping)
+public List<Task> getTasksBetweenDates(Date fromDate, Date toDate){
+    String sql =
+        "SELECT id, description, due_date " +
+        "FROM tasks " +
+        "WHERE duedate > :fromDate AND duedate < :toDate";
+
+    try (Connection con = sql2o.open()) {
+        return con.createQuery(sql)
+            .addParameter("fromDate", fromDate).addParameter("toDate", toDate)
+            .addColumnMapping("DUE_DATE", "dueDate")
+            .executeAndFetch(Task.class);
+    }
+}
+
+
+2014:
+1、加入sql2o,版本（1.6.0-SNAPSHOT）
+https://github.com/aaberg/sql2o

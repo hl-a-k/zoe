@@ -1,0 +1,111 @@
+package com.zoe.framework.sql2o.schema;
+
+import com.zoe.db.schema.query.QueryHelper;
+import com.zoe.framework.sql2o.Query;
+import com.zoe.framework.sql2o.Sql2o;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Created by caizhicong on 2016/6/7.
+ */
+public class QueryHelperImpl implements QueryHelper {
+
+    private Sql2o sql2o;
+
+    public QueryHelperImpl(String url, String user, String pass) {
+        sql2o = new Sql2o(url, user, pass);
+    }
+
+    @Override
+    public Connection getConnection() {
+        try {
+            return sql2o.getDataSource().getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 列表查询
+     *
+     * @param sql
+     * @param params
+     * @return 列表查询结果集
+     */
+    @Override
+    public List<Map> findMap(String sql, Map<String, Object> params) {
+        return findList(Map.class, sql, params);
+    }
+
+    /**
+     * 获得结果集
+     *
+     * @param clazz  返回的实体类型
+     * @param sql    SQL语句
+     * @param params 参数
+     * @return 结果集
+     */
+    @Override
+    public <A> A findFirst(Class<A> clazz, String sql, Map<String, Object> params) {
+        try (com.zoe.framework.sql2o.Connection con = sql2o.open()) {
+            Query q = con.createQuery(sql);
+            setParameters(q, params);
+            if (clazz == Map.class) {
+                q.setCaseSensitive(true);
+                q.setAutoDeriveColumnNames(false);
+                List<A> list = (List<A>) q.executeAndFetchTable().asList();
+                if (list.size() > 0) {
+                    return list.get(0);
+                }
+                return null;
+            }
+            return q.executeAndFetchFirst(clazz);
+        }
+    }
+
+    /**
+     * 获得结果集
+     *
+     * @param clazz  返回的实体类型
+     * @param sql    SQL语句
+     * @param params 参数
+     * @return 结果集
+     */
+    @Override
+    public <A> List<A> findList(Class<A> clazz, String sql, Map<String, Object> params) {
+        try (com.zoe.framework.sql2o.Connection con = sql2o.open()) {
+            Query q = con.createQuery(sql);
+            setParameters(q, params);
+            if (clazz == Map.class) {
+                q.setCaseSensitive(true);
+                q.setAutoDeriveColumnNames(false);
+                List<A> list = (List<A>) q.executeAndFetchTable().asList();
+                return list;
+            }
+            return q.executeAndFetch(clazz);
+        }
+    }
+
+    /**
+     * 设置Query对象的参数
+     *
+     * @param query  sql2o查询对象
+     * @param params 一个Map<String, Object>对象
+     */
+    private void setParameters(Query query, Map<String, Object> params) {
+        if ((params != null) && !params.isEmpty()) {
+            Map<String, List<Integer>> paramNameMap = query.getParamNameToIdxMap();
+            if (!paramNameMap.isEmpty()) {
+                for (String key : paramNameMap.keySet()) {
+                    query.addParameter(key, params.get(key));
+                }
+            }
+        }
+    }
+}

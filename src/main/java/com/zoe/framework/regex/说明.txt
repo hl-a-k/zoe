@@ -1,0 +1,11 @@
+﻿1、从.NET中剥离的正则引擎，来源版本.NET 4.5.1(到4.6.1源码没有变更)。
+2、为了方便转换为Java代码，去除宏命令：DBG、SILVERLIGHT
+
+0、有更新的地方会使用如下标记：@czc
+1、更新内容：
+CultureInfo.InvariantCulture --> Locale.CHINESE
+CultureInfo.CurrentCulture --> Locale.getDefault()
+CultureInfo --> Locale
+2、删除：RegexCompiler、RegexTypeCompiler、RegexLWCGCompiler 这些Java里面不需要。
+删除Regex类里CompileToAssembly系列方法
+3、增加类：Debug、ArrayExt
